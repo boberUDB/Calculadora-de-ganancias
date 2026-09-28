@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Doña Fresa: Ponle precio a tus postres</title>
+<meta name="description" content="Calculadora gratuita para reposteras: suma ingredientes, empaque y tu tiempo, y prueba un precio con margen sobre la venta.">
+<meta name="theme-color" content="#FBF3E8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 7c9-1 14 5 12 12s-8 11-12 12C12 30 6 26 4 19S7 6 16 7z' fill='%23D23A4E'/%3E%3Cpath d='M16 8c-3-5-8-4-9-2 3 0 5 1 7 3-3 0-5 1-6 3 4-1 6-1 8-1s4 0 8 1c-1-2-3-3-6-3 2-2 4-3 7-3-1-2-6-3-9 2z' fill='%237FA85A'/%3E%3C/svg%3E">
+<!--STYLES-->
+<link rel="stylesheet" href="src/styles.css">
+<!--/STYLES-->
+</head>
+<body>
+<a class="skip" href="#calc">Ir a la calculadora</a>
+
+<header class="topbar">
+  <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span>Doña Fresa</span></div>
+  <span class="save-state" id="save-state" role="status">Guardado en este dispositivo</span>
+</header>
+
+<main class="wrap">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <h1 id="hero-title">Tus postres merecen un precio bien calculado</h1>
+      <p class="lede">Incluye ingredientes, empaque y tu tiempo. Descubre tus costos y prueba un precio.</p>
+      <div class="hero-actions">
+        <button type="button" class="btn btn-primary" id="btn-start">Calcular mi receta</button>
+        <button type="button" class="btn btn-ghost" id="btn-example">Probar un ejemplo</button>
+      </div>
+    </div>
+    <div class="hero-art" id="hero-mascot" aria-hidden="true"></div>
+  </section>
+
+  <section class="calc" id="calc" aria-label="Calculadora" data-step="1">
+    <div class="recipe-bar">
+      <label class="sr-only" for="recipe-select">Receta abierta</label>
+      <select id="recipe-select" class="recipe-select"></select>
+      <div class="recipe-actions">
+        <button type="button" class="btn btn-small" id="btn-new">Nueva</button>
+        <button type="button" class="btn btn-small" id="btn-dup">Duplicar</button>
+        <button type="button" class="btn btn-small btn-quiet-danger" id="btn-del">Borrar</button>
+      </div>
+    </div>
+
+    <p class="example-banner" id="example-banner" hidden>
+      <strong>Ejemplo ficticio.</strong> Los precios son inventados para mostrar cómo funciona. Para tu receta, toca <button type="button" class="linklike" id="btn-start-2">Calcular mi receta</button>.
+    </p>
+
+    <nav class="stepper" aria-label="Pasos">
+      <p class="step-progress" id="step-progress" aria-live="polite">Paso 1 de 3</p>
+      <ol>
+        <li><button type="button" class="step-tab" data-go="1" aria-current="step"><span class="n">1</span> Tu receta</button></li>
+        <li><button type="button" class="step-tab" data-go="2"><span class="n">2</span> Tus costos</button></li>
+        <li><button type="button" class="step-tab" data-go="3"><span class="n">3</span> Tu precio</button></li>
+      </ol>
+    </nav>
+
+    <div class="calc-grid">
+      <form class="panel" id="form" novalidate autocomplete="off">
+        <!-- PASO 1 -->
+        <fieldset class="step" data-step="1">
+          <legend class="step-title">Tu receta</legend>
+          <div class="field">
+            <label for="f-name">Nombre de la receta</label>
+            <input id="f-name" data-k="name" type="text" maxlength="120" placeholder="Ej.: Pastel de tres leches">
+          </div>
+          <div class="field">
+            <label for="f-currency">Moneda</label>
+            <select id="f-currency" data-k="currency"></select>
+            <p class="hint">Cambiar la moneda solo cambia el símbolo. No convierte los importes.</p>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label for="f-produced">Unidades que salen del lote</label>
+              <input id="f-produced" data-k="produced" inputmode="decimal" placeholder="Ej.: 12" aria-describedby="e-produced">
+              <p class="err" id="e-produced"></p>
+            </div>
+            <div class="field">
+              <label for="f-sellable">Unidades que puedes vender</label>
+              <input id="f-sellable" data-k="sellable" inputmode="decimal" placeholder="Ej.: 11" aria-describedby="h-sellable e-sellable">
+              <p class="hint" id="h-sellable">Descuenta las que se rompen, prueban o regalas.</p>
+              <p class="err" id="e-sellable"></p>
+            </div>
+          </div>
+          <div class="step-nav"><span></span><button type="button" class="btn btn-primary" data-next="2">Siguiente: tus costos</button></div>
+        </fieldset>
+
+        <!-- PASO 2 -->
+        <fieldset class="step" data-step="2">
+          <legend class="step-title">Tus costos</legend>
+          <p class="hint hint-box">Escribe decimales con punto o coma: <b>1,50</b> o <b>1.50</b>. Sin separador de miles: <b>1500</b>. Usa medidas pesadas o del envase (g, kg, ml, l, unidades); tazas y cucharadas todavía no.</p>
+
+          <section class="group" aria-labelledby="g-ing">
+            <h3 id="g-ing">Ingredientes del lote</h3>
+            <p class="err" id="e-ingredients"></p>
+            <ul class="ing-list" id="ing-list"></ul>
+            <button type="button" class="btn btn-add" id="btn-add-ing">+ Agregar ingrediente</button>
+          </section>
+
+          <section class="group" aria-labelledby="g-pack">
+            <h3 id="g-pack">Empaque</h3>
+            <div class="field">
+              <label for="f-packaging">Empaque por cada unidad vendible <span class="opt">opcional</span></label>
+              <div class="money"><span class="cur" aria-hidden="true"></span><input id="f-packaging" data-k="packaging" inputmode="decimal" placeholder="0,25" aria-describedby="h-packaging e-packaging"></div>
+              <p class="hint" id="h-packaging">Capacillo, caja, etiqueta, bolsa… lo que lleva cada unidad.</p>
+              <p class="err" id="e-packaging"></p>
+            </div>
+          </section>
+
+          <section class="group" aria-labelledby="g-time">
+            <h3 id="g-time">Tu tiempo</h3>
+            <div class="row2">
+              <div class="field">
+                <label for="f-laborTime">Tiempo de trabajo del lote <span class="opt">opcional</span></label>
+                <div class="split">
+                  <input id="f-laborTime" data-k="laborTime" inputmode="decimal" placeholder="2" aria-describedby="e-laborTime">
+                  <label class="sr-only" for="f-laborUnit">Unidad de tiempo</label>
+                  <select id="f-laborUnit" data-k="laborUnit"><option value="h">horas</option><option value="min">minutos</option></select>
+                </div>
+                <p class="err" id="e-laborTime"></p>
+              </div>
+              <div class="field">
+                <label for="f-hourlyPay">Lo que quieres ganar por hora <span class="opt">opcional</span></label>
+                <div class="money"><span class="cur" aria-hidden="true"></span><input id="f-hourlyPay" data-k="hourlyPay" inputmode="decimal" placeholder="3" aria-describedby="e-hourlyPay"></div>
+                <p class="err" id="e-hourlyPay"></p>
+              </div>
+            </div>
+            <p class="hint">Tu tiempo es un costo. Si lo dejas vacío, el beneficio incluye tu pago y parecerá mayor de lo que es.</p>
+          </section>
+
+          <section class="group" aria-labelledby="g-other">
+            <h3 id="g-other">Otros costos del lote</h3>
+            <div class="row2">
+              <div class="field">
+                <label for="f-energy">Gas o electricidad <span class="opt">opcional</span></label>
+                <div class="money"><span class="cur" aria-hidden="true"></span><input id="f-energy" data-k="energy" inputmode="decimal" placeholder="0,80" aria-describedby="e-energy"></div>
+                <p class="err" id="e-energy"></p>
+              </div>
+              <div class="field">
+                <label for="f-overhead">Gastos generales asignados <span class="opt">opcional</span></label>
+                <div class="money"><span class="cur" aria-hidden="true"></span><input id="f-overhead" data-k="overhead" inputmode="decimal" placeholder="0,50" aria-describedby="e-overhead"></div>
+                <p class="err" id="e-overhead"></p>
+              </div>
+            </div>
+            <p class="hint">Pon aquí la parte que le toca a este lote (limpieza, moldes que se gastan, transporte de compras). Cuenta cada gasto una sola vez: si el gas ya va en gastos generales, deja vacío el otro campo.</p>
+          </section>
+          <div class="step-nav"><button type="button" class="btn btn-ghost" data-next="1">Atrás</button><button type="button" class="btn btn-primary" data-next="3">Siguiente: tu precio</button></div>
+        </fieldset>
+
+        <!-- PASO 3 -->
+        <fieldset class="step" data-step="3">
+          <legend class="step-title">Tu precio</legend>
+          <div class="field">
+            <label for="f-margin">Margen deseado sobre la venta</label>
+            <div class="margin-row">
+              <div class="pct"><input id="f-margin" data-k="margin" inputmode="decimal" placeholder="40" aria-describedby="h-margin e-margin"><span aria-hidden="true">%</span></div>
+              <input type="range" id="f-margin-range" min="0" max="80" step="1" aria-label="Ajustar margen con deslizador">
+            </div>
+            <p class="hint" id="h-margin">Qué parte de lo que cobras te queda después de pagar todos los costos.</p>
+            <p class="err" id="e-margin"></p>
+          </div>
+
+          <details class="advanced" id="adv">
+            <summary>Pedidos, comisiones y entrega <span class="opt">avanzado</span></summary>
+            <label class="check"><input type="checkbox" id="f-adv" data-k="adv.enabled"> Incluir comisiones de cobro y costos por pedido</label>
+            <div class="adv-fields" id="adv-fields">
+              <div class="row2">
+                <div class="field">
+                  <label for="f-adv-q">Unidades por pedido</label>
+                  <input id="f-adv-q" data-k="adv.q" inputmode="numeric" placeholder="6" aria-describedby="e-adv.q">
+                  <p class="err" id="e-adv.q"></p>
+                </div>
+                <div class="field">
+                  <label for="f-adv-r">Comisión porcentual del cobro</label>
+                  <div class="pct"><input id="f-adv-r" data-k="adv.r" inputmode="decimal" placeholder="5" aria-describedby="e-adv.r"><span aria-hidden="true">%</span></div>
+                  <p class="err" id="e-adv.r"></p>
+                </div>
+                <div class="field">
+                  <label for="f-adv-f">Comisión fija por pedido</label>
+                  <div class="money"><span class="cur" aria-hidden="true"></span><input id="f-adv-f" data-k="adv.f" inputmode="decimal" placeholder="0,30" aria-describedby="e-adv.f"></div>
+                  <p class="err" id="e-adv.f"></p>
+                </div>
+                <div class="field">
+                  <label for="f-adv-delivery">Costo de entrega que tú pagas</label>
+                  <div class="money"><span class="cur" aria-hidden="true"></span><input id="f-adv-delivery" data-k="adv.delivery" inputmode="decimal" placeholder="0" aria-describedby="h-delivery e-adv.delivery"></div>
+                  <p class="hint" id="h-delivery">Por pedido. Si la clienta paga el envío aparte, déjalo vacío.</p>
+                  <p class="err" id="e-adv.delivery"></p>
+                </div>
+              </div>
+              <p class="hint">Con costos fijos por pedido, los totales describen <b>un pedido</b> de esas unidades, no el lote completo.</p>
+            </div>
+          </details>
+
+          <div class="field whatif">
+            <label for="f-manualPrice">¿Qué pasa si cobro…? <span class="opt">precio por unidad</span></label>
+            <div class="money"><span class="cur" aria-hidden="true"></span><input id="f-manualPrice" data-k="manualPrice" inputmode="decimal" placeholder="Usa el sugerido" aria-describedby="h-manual e-manualPrice"></div>
+            <p class="hint" id="h-manual">Escribe el precio que te gustaría cobrar para ver qué te queda. Vacío = precio sugerido.</p>
+            <p class="err" id="e-manualPrice"></p>
+          </div>
+          <div class="step-nav"><button type="button" class="btn btn-ghost" data-next="2">Atrás</button><span></span></div>
+        </fieldset>
+      </form>
+
+      <aside class="results" id="results" aria-labelledby="res-title">
+        <div class="res-head">
+          <div class="res-mascot" id="res-mascot" aria-hidden="true"></div>
+          <div>
+            <h2 id="res-title">Resultado</h2>
+            <p class="pill" id="res-status">Cálculo incompleto</p>
+          </div>
+        </div>
+
+        <div id="res-missing" class="missing"></div>
+
+        <div id="res-body" hidden>
+          <div class="price-card">
+            <p class="label">Precio sugerido por unidad</p>
+            <p class="big" id="r-price">—</p>
+            <p class="sub" id="r-price-sub"></p>
+          </div>
+          <dl class="kv">
+            <div><dt>Costo por unidad vendible</dt><dd id="r-unit">—</dd></div>
+            <div><dt>Costo total del lote</dt><dd id="r-batch">—</dd></div>
+            <div><dt>Precio mínimo por unidad sin perder</dt><dd id="r-break">—</dd></div>
+          </dl>
+
+          <h3 class="res-h">Dónde se va el costo del lote</h3>
+          <div class="bars" id="r-bars" role="img" aria-label=""></div>
+          <ul class="legend" id="r-legend"></ul>
+
+          <h3 class="res-h" id="r-sim-title">Si vendes todo a este precio</h3>
+          <dl class="kv" id="r-sim"></dl>
+          <p class="profit-note" id="r-profit-note"></p>
+
+          <div class="explain" id="r-explain"></div>
+          <p class="fine" id="r-fine"></p>
+
+          <div class="res-actions">
+            <button type="button" class="btn btn-small" id="btn-copy">Copiar resumen</button>
+            <button type="button" class="btn btn-small" id="btn-print" data-live-only>Imprimir o guardar PDF</button>
+            <button type="button" class="btn btn-small" id="btn-share" data-live-only>Compartir la calculadora</button>
+          </div>
+          <p class="fine" id="copy-status" role="status"></p>
+          <textarea id="copy-fallback" class="copy-fallback" rows="6" readonly hidden aria-label="Resumen para copiar"></textarea>
+        </div>
+
+        <div class="kit" id="kit"></div>
+      </aside>
+    </div>
+
+    <details class="backup" id="backup">
+      <summary>Guardar y respaldo</summary>
+      <p class="hint" id="storage-note">Tus recetas se guardan solo en este navegador. Si abres la calculadora desde TikTok, ese navegador puede ser distinto de Chrome y borrar sus datos. Para no perderlas, descarga o copia un respaldo de vez en cuando.</p>
+      <div class="res-actions">
+        <button type="button" class="btn btn-small" id="btn-export" data-live-only>Descargar respaldo</button>
+        <button type="button" class="btn btn-small" id="btn-export-copy">Copiar respaldo</button>
+        <label class="btn btn-small file-btn">Importar archivo<input type="file" id="file-import" accept="application/json,.json" class="sr-only"></label>
+        <button type="button" class="btn btn-small" id="btn-paste">Pegar respaldo</button>
+      </div>
+      <div id="paste-box" hidden>
+        <label for="paste-area">Pega aquí el texto del respaldo</label>
+        <textarea id="paste-area" rows="5"></textarea>
+        <button type="button" class="btn btn-small btn-primary" id="btn-paste-go">Importar texto</button>
+      </div>
+      <p class="fine" id="backup-status" role="status"></p>
+      <textarea id="backup-fallback" class="copy-fallback" rows="6" readonly hidden aria-label="Respaldo para copiar"></textarea>
+    </details>
+  </section>
+
+  <footer class="foot">
+    <p>Calcula con los datos que tú escribes. No conoce precios de tu zona ni la demanda, no calcula impuestos y no sustituye una contabilidad completa.</p>
+    <p>Doña Fresa es un personaje de ficción.</p>
+  </footer>
+</main>
+
+<div class="minibar" id="minibar" aria-hidden="true">
+  <span id="mini-text">Cálculo incompleto</span>
+  <button type="button" class="btn btn-small btn-primary" id="mini-go" tabindex="-1">Ver precio</button>
+</div>
+
+<div class="toast" id="toast" role="status" hidden><span id="toast-text"></span><button type="button" class="linklike" id="toast-undo">Deshacer</button></div>
+
+<dialog id="dlg" aria-labelledby="dlg-title">
+  <form method="dialog">
+    <h2 id="dlg-title"></h2>
+    <p id="dlg-text"></p>
+    <div class="dlg-actions">
+      <button value="cancel" class="btn btn-ghost" id="dlg-cancel">Cancelar</button>
+      <button value="ok" class="btn btn-primary" id="dlg-ok">Aceptar</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="sr-only" aria-live="polite" id="announcer"></div>
+<section class="print-sheet" id="print-sheet" aria-hidden="true"></section>
+
+<!--SCRIPT-->
+<script type="module" src="src/app.js"></script>
+<!--/SCRIPT-->
+</body>
+</html>
